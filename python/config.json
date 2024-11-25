@@ -1,0 +1,22 @@
+{
+    "robot": {
+        "mass": 50,
+        "length": 3.0,
+        "width": 2.5,
+        "motor_bias": 1.2,
+        "motor_max_force": 50,
+        "control_type": "diff"
+    },
+    "obstacles": [
+        {
+            "type": "swimmer",
+            "a": 1.0,
+            "b": 1.0
+        },
+        {
+            "type": "boat",
+            "a": 4.0,
+            "b": 3.0
+        }
+    ]
+}
