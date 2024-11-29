@@ -2,7 +2,7 @@ import json
 
 class DataHandler:
     def __init__(self):
-        with open('config.json', 'r') as file:
+        with open('python/config.json', 'r') as file:
             json_obj = json.load(file)
 
         self.robot_obj = json_obj["robot"]

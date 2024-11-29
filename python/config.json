@@ -5,18 +5,33 @@
         "width": 2.5,
         "motor_bias": 1.2,
         "motor_max_force": 50,
-        "control_type": "diff"
+        "control_type": "diff",
+        "k": 0.3
     },
     "obstacles": [
         {
+            "id": 0,
             "type": "swimmer",
             "a": 1.0,
-            "b": 1.0
+            "b": 1.0,
+
+            "pose": {
+                "x": 10,
+                "y": 10,
+                "theta": 0
+            }
         },
         {
+            "id": 1,
             "type": "boat",
             "a": 4.0,
-            "b": 3.0
+            "b": 3.0,
+
+            "pose": {
+                "x": 20,
+                "y": 20,
+                "theta": 0
+            }
         }
     ],
     "cameras": [
@@ -48,5 +63,13 @@
                 }
             }
         }
-    ]
+    ],
+
+    "target": {
+        "pose": {
+            "x": 50,
+            "y": 50,
+            "theta": 0
+        }
+    }
 }
