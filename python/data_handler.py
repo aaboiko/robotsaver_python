@@ -7,6 +7,7 @@ class DataHandler:
 
         self.robot_obj = json_obj["robot"]
         self.obstacles_obj = json_obj["obstacles"]
+        self.target_obj = json_obj["target"]
 
         self.cameras_obj = json_obj["cameras"]
 
@@ -21,6 +22,10 @@ class DataHandler:
     
     def get_cameras_obj(self):
         return self.cameras_obj
+    
+
+    def get_target_obj(self):
+        return self.target_obj
     
 
 data_handler = DataHandler()

@@ -29,6 +29,7 @@ class Robot:
         self.right_motor_level = 0
         self.external_force = np.zeros(2)
 
+        self.mutex = threading.Lock()
         self.thread = threading.Thread(target=self.run)
         self.thread.start()
 
@@ -99,3 +100,6 @@ class Robot:
             self.pose = Pose(pose_xy[0], pose_xy[1], theta)
 
             timestamp_prev = timestamp
+
+
+robot = Robot()

@@ -1,4 +1,6 @@
 import numpy as np
+import threading
+import time
 from data_handler import data_handler
 from pose import Pose
 
@@ -24,9 +26,44 @@ class Obstacle:
 
         self.A = R @ self.A_orth @ R.T
 
+        traj_file = obstacle_obj["traj"]
+        self.traj = np.loadtxt(traj_file, delimiter=' ')
+
+        self.mutex = threading.Lock()
+        self.thread = threading.Thread(target=self.run)
+        self.thread.start()
+
 
     def set_pose(self, pose):
         self.pose = pose
+
+
+    def run(self):
+        print('started thread for obstacle with id = ' + str(self.id))
+        n = self.traj.shape[0]
+        timestamp_prev = int(time.time() * 1000)
+        ptr = 0
+
+        while(True):
+            timestamp = int(time.time() * 1000)
+            dt = timestamp - timestamp_prev
+
+            if dt >= 100:
+                x, y, theta = self.traj[ptr,:]
+                self.pose = Pose(x, y, theta)
+
+                R = np.array([
+                    [np.cos(theta), -np.sin(theta)],
+                    [np.sin(theta), np.cos(theta)]
+                ])
+
+                self.A = R @ self.A_orth @ R.T
+
+                timestamp_prev = timestamp
+                ptr += 1
+
+                if ptr == n:
+                    ptr = 0
 
 
 class ObstaclesHandler:
@@ -41,6 +78,23 @@ class ObstaclesHandler:
 
     def get_obstacles(self):
         return self.obstacles
+    
+
+    def get_obstacle_states(self):
+        states = []
+
+        for obstacle in self.obstacles:
+            A = obstacle.A
+            pose = obstacle.pose
+
+            obj = {
+                "A": A,
+                "pose": pose
+            }
+
+            states.append(obj)
+
+        return states
     
 
 obstacles_handler = ObstaclesHandler()
