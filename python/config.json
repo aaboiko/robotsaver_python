@@ -6,7 +6,9 @@
         "motor_bias": 1.2,
         "motor_max_force": 50,
         "control_type": "diff",
-        "k": 0.3
+        "k": 0.3,
+        "k_resistive": 0.3,
+        "k_rot": 0.3
     },
     "obstacles": [
         {
@@ -45,6 +47,7 @@
             "fx": 0,
             "fy": 0,
             "fov": 1.57,
+            "s": 0,
 
             "position": {
                 "x": 0.0,

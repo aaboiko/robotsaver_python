@@ -13,7 +13,11 @@ class Robot:
         self.length = robot_obj["length"]
         self.width = robot_obj["width"]
         self.inertia = (1/12) * self.mass * (self.length**2 + self.width**2)
+
         self.k = robot_obj["k"]
+        self.k_resistive = robot_obj["k_resistive"]
+        self.k_rot = robot_obj["k_rot"]
+
         self.motor_bias = robot_obj["motor_bias"]
         self.motor_max_force = robot_obj["motor_max_force"]
         self.control_type = robot_obj["control_type"]
@@ -83,19 +87,20 @@ class Robot:
             timestamp = time.time()
             dt = timestamp - timestamp_prev
 
-            internal_acceleration_linear = (self.left_motor_force + self.right_motor_force) / (self.k * self.mass)
+            internal_acceleration_linear = ((self.left_motor_force + self.right_motor_force) / (self.k * self.mass)) * np.array([np.cos(self.pose.theta), np.sin(self.pose.theta)])
             internal_acceleration_rotational = self.motor_bias * (self.right_motor_force - self.left_motor_force) / self.inertia
-            external_acceleration_vector = self.external_force / self.mass
-            internal_acceleration_vector = internal_acceleration_linear * np.array([np.cos(self.pose.theta), np.sin(self.pose.theta)])
-            acceleration_vector = internal_acceleration_vector + external_acceleration_vector
-            self.ddpose = Pose(acceleration_vector[0], acceleration_vector[1], internal_acceleration_rotational)
+            external_acceleration_linear = self.external_force / self.mass - self.k_resistive * np.array([self.dpose.x, self.dpose.y])
+            external_acceleration_rotational = -self.k_rot * self.dpose.theta
+            acceleration_linear = internal_acceleration_linear + external_acceleration_linear
+            acceleration_rotational = internal_acceleration_rotational + external_acceleration_rotational
+            self.ddpose = Pose(acceleration_linear[0], acceleration_linear[1], acceleration_rotational)
 
-            velocity_vector_linear = np.array([self.dpose.x, self.dpose.y]) + acceleration_vector * dt
-            dtheta = self.dpose.theta + internal_acceleration_rotational * dt
-            self.dpose = Pose(velocity_vector_linear[0], velocity_vector_linear[1], dtheta)
-            self.velocity = np.linalg.norm(velocity_vector_linear)
+            velocity_linear = np.array([self.dpose.x, self.dpose.y]) + acceleration_linear * dt
+            dtheta = self.dpose.theta + acceleration_rotational * dt
+            self.dpose = Pose(velocity_linear[0], velocity_linear[1], dtheta)
+            self.velocity = np.linalg.norm(velocity_linear)
 
-            pose_xy = np.array([self.pose.x, self.pose.y]) + velocity_vector_linear
+            pose_xy = np.array([self.pose.x, self.pose.y]) + velocity_linear * dt
             theta = self.pose.theta + dtheta * dt
             self.pose = Pose(pose_xy[0], pose_xy[1], theta)
 

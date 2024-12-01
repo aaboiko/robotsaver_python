@@ -33,4 +33,3 @@ class PathPlanner:
             obstacle_states = obstacles_handler.get_obstacle_states()
 
 
-

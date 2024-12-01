@@ -86,8 +86,12 @@ class ObstaclesHandler:
         for obstacle in self.obstacles:
             A = obstacle.A
             pose = obstacle.pose
+            id = obstacle.id
+            type = obstacle.type
 
             obj = {
+                "id": id,
+                "type": type,
                 "A": A,
                 "pose": pose
             }
