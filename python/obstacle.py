@@ -10,6 +10,7 @@ class Obstacle:
         self.type = obstacle_obj["type"]
         self.a = obstacle_obj["a"]
         self.b = obstacle_obj["b"]
+        self.running = True
 
         self.A_orth = np.array([
             [1 / (self.a**2), 0],
@@ -18,6 +19,7 @@ class Obstacle:
 
         pose_obj = obstacle_obj["pose"]
         self.pose = Pose(pose_obj["x"], pose_obj["y"], pose_obj["theta"])
+        self.theta = pose_obj["theta"]
 
         R = np.array([
             [np.cos(pose_obj["theta"]), -np.sin(pose_obj["theta"])],
@@ -38,13 +40,17 @@ class Obstacle:
         self.pose = pose
 
 
+    def stop(self):
+        self.running = False
+
+
     def run(self):
         print('started thread for obstacle with id = ' + str(self.id))
         n = self.traj.shape[0]
         timestamp_prev = int(time.time() * 1000)
         ptr = 0
 
-        while(True):
+        while(self.running):
             timestamp = int(time.time() * 1000)
             dt = timestamp - timestamp_prev
 
@@ -88,17 +94,28 @@ class ObstaclesHandler:
             pose = obstacle.pose
             id = obstacle.id
             type = obstacle.type
+            a = obstacle.a
+            b = obstacle.b
+            theta = obstacle.theta
 
             obj = {
                 "id": id,
                 "type": type,
                 "A": A,
-                "pose": pose
+                "pose": pose,
+                "a": a,
+                "b": b,
+                "theta": theta
             }
 
             states.append(obj)
 
         return states
+    
+
+    def stop(self):
+        for obstacle in self.obstacles:
+            obstacle.stop()
     
 
 obstacles_handler = ObstaclesHandler()

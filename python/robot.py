@@ -33,6 +33,7 @@ class Robot:
         self.right_motor_level = 0
         self.external_force = np.zeros(2)
 
+        self.running = True
         self.mutex = threading.Lock()
         self.thread = threading.Thread(target=self.run)
         self.thread.start()
@@ -78,12 +79,16 @@ class Robot:
         self.external_force = force
 
 
+    def stop(self):
+        self.running = False
+
+
     def run(self):
         print('robot thread started...')
 
         timestamp_prev = time.time()
 
-        while(True):
+        while(self.running):
             timestamp = time.time()
             dt = timestamp - timestamp_prev
 
