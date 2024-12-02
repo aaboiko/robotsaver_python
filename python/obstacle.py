@@ -33,7 +33,7 @@ class Obstacle:
 
         self.mutex = threading.Lock()
         self.thread = threading.Thread(target=self.run)
-        self.thread.start()
+        #self.thread.start()
 
 
     def set_pose(self, pose):

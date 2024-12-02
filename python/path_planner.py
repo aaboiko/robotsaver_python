@@ -5,6 +5,9 @@ from robot import robot
 from obstacle import obstacles_handler
 from target import target
 
+import matplotlib.pyplot as plt
+from matplotlib.patches import Ellipse
+
 R_PERCEPTION = 2
 
 class PathPlanner:
@@ -29,7 +32,6 @@ class PathPlanner:
     def next_point(self, p_robot, p_target, obstacle_states):
         vec_to_target = p_target - p_robot
         direct_obs_r = -1
-        direct_obs_A = np.zeros((2, 2))
         direct_obs_dist = np.inf
         vec_to_obs = np.zeros(2)
         obs_xy = np.zeros(2)
@@ -48,7 +50,6 @@ class PathPlanner:
                 if dist < direct_obs_dist:
                     direct_obs_dist = dist
                     direct_obs_r = obs_r
-                    direct_obs_A = obs_A
                     vec_to_obs = obs_pose_xy - p_robot
                     obs_xy = obs_pose_xy
 
@@ -60,16 +61,17 @@ class PathPlanner:
         axis_to_obs = vec_to_obs / np.linalg.norm(vec_to_obs)
 
         if azimuth_to_target >= azimuth_to_obs:
-            angle_rot = np.pi / 2
+            angle_rot = np.pi / 4
         else:
-            angle_rot = -np.pi / 2
+            angle_rot = -np.pi / 4
 
         R = np.array([
             [np.cos(angle_rot), -np.sin(angle_rot)],
             [np.sin(angle_rot), np.cos(angle_rot)]
         ])
 
-        p_bypass = obs_xy + obs_r * R @ axis_to_obs
+        p_bypass = obs_xy + 2 * direct_obs_r * R @ axis_to_obs
+        print('p_bypass: ' + str(p_bypass))
 
         return self.next_point(p_robot, p_bypass, obstacle_states)
     
@@ -81,11 +83,42 @@ class PathPlanner:
 
 
     def run(self):
-        while(self.running):
+        print('path planner started...')
+
+        '''while(self.running):
             robot_pose_xy = np.array([robot.pose.x, robot.pose.y])
             robot_pose_theta = robot.pose.theta
             target_pose_xy = np.array([target.pose.x, target.pose.y])
-            obstacle_states = obstacles_handler.get_obstacle_states()
+            obstacle_states = obstacles_handler.get_obstacle_states()'''
+
+        p_target = np.array([target.pose.x, target.pose.y])
+        p_robot = np.array([robot.pose.x, robot.pose.y])
+        obstacle_states = obstacles_handler.get_obstacle_states()
+
+        cur_point = p_robot
+        points = [cur_point]
+
+        print('starting while...')
+        while(np.linalg.norm(cur_point - p_target) > 0.1 and len(points) < 10):
+            point = self.next_point(p_robot, p_target, obstacle_states)
+            print('new point: ' + str(point))
+            points.append(point)
+            cur_point = point
+
+        for state in obstacle_states:
+            pose = state["pose"]
+            theta = state["theta"]
+            a = state["a"]
+            b = state["b"]
+            ellipse = Ellipse(xy=[pose.x, pose.y], width=2*a, height=2*b, angle=np.rad2deg(theta))
+            plt.gca().add_artist(ellipse)
+
+        for p1, p2 in zip(points[:-1], points[1:]):
+            x1, y1 = p1
+            x2, y2 = p2
+            plt.plot([x1, x2], [y1, y2], color='blue')
+
+        plt.show()
 
 
 path_planner = PathPlanner()
