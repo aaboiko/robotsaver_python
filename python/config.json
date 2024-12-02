@@ -6,9 +6,14 @@
         "motor_bias": 1.2,
         "motor_max_force": 50,
         "control_type": "diff",
+
         "k": 0.3,
         "k_resistive": 0.3,
-        "k_rot": 0.3
+        "k_rot": 0.3,
+        "v_ref": 5.0,
+        "dtheta_ref": 0.785,
+        "k_obs_avoid": 1.0,
+        "k_theta_e": 1.0
     },
     "obstacles": [
         {

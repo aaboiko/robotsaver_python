@@ -5,8 +5,6 @@ from robot import robot
 from obstacle import obstacles_handler
 from target import target
 
-import matplotlib.pyplot as plt
-from matplotlib.patches import Ellipse
 
 R_PERCEPTION = 2
 
@@ -15,7 +13,7 @@ class PathPlanner:
         self.running = True
         self.mutex = threading.Lock()
         self.thread = threading.Thread(target=self.run)
-        self.thread.start()
+        #self.thread.start()
 
 
     def line_ellipse_intersect(self, x0, vec, xc, A):
@@ -27,6 +25,32 @@ class PathPlanner:
         D = B_sq**2 - 4 * A_sq * C_sq
 
         return D >= 0
+    
+
+    def obstacle_is_forward(self, p_robot, robot_theta, obstacle_states):
+        vec = p_robot * np.array([np.cos(robot_theta), np.sin(robot_theta)])
+        direct_obs_dist = np.inf
+        vec_to_obs = np.zeros(2)
+        obs_xy = np.zeros(2)
+        n_direct_obs = 0
+
+        for obs_state in obstacle_states:
+            obs_A = obs_state["A"]
+            obs_pose = obs_state["pose"]
+            obs_pose_xy = np.array([obs_pose.x, obs_pose.y])
+
+            if self.line_ellipse_intersect(p_robot, vec, obs_pose_xy, obs_A):
+                dist = np.linalg.norm(obs_pose_xy - p_robot)
+                n_direct_obs += 1
+
+                if dist < direct_obs_dist:
+                    direct_obs_dist = dist
+                    vec_to_obs = obs_pose_xy - p_robot
+                    obs_xy = obs_pose_xy
+
+        has_obstacles = n_direct_obs > 0
+
+        return has_obstacles, obs_xy, vec_to_obs, direct_obs_dist
     
 
     def next_point(self, p_robot, p_target, obstacle_states):
@@ -85,40 +109,38 @@ class PathPlanner:
     def run(self):
         print('path planner started...')
 
-        '''while(self.running):
+        while(self.running):
             robot_pose_xy = np.array([robot.pose.x, robot.pose.y])
             robot_pose_theta = robot.pose.theta
             target_pose_xy = np.array([target.pose.x, target.pose.y])
-            obstacle_states = obstacles_handler.get_obstacle_states()'''
+            obstacle_states = obstacles_handler.get_obstacle_states()
 
-        p_target = np.array([target.pose.x, target.pose.y])
-        p_robot = np.array([robot.pose.x, robot.pose.y])
-        obstacle_states = obstacles_handler.get_obstacle_states()
+            has_obstacles, obs_xy, vec_to_obs, obs_dist = self.obstacle_is_forward(robot_pose_xy, robot_pose_theta, obstacle_states)
 
-        cur_point = p_robot
-        points = [cur_point]
+            if has_obstacles:
+                v_ref = robot.k_obs_avoid * obs_dist
+                v_e = v_ref - robot.velocity
+                azimuth_to_obs = np.arctan2(vec_to_obs[1], vec_to_obs[0])
+                level = v_e / abs(v_e) * 100
 
-        print('starting while...')
-        while(np.linalg.norm(cur_point - p_target) > 0.1 and len(points) < 10):
-            point = self.next_point(p_robot, p_target, obstacle_states)
-            print('new point: ' + str(point))
-            points.append(point)
-            cur_point = point
+                if robot_pose_theta >= azimuth_to_obs:
+                    robot.set_left_motor_level(level / 2)
+                    robot.set_right_motor_level(level)
+                else:
+                    robot.set_left_motor_level(level)
+                    robot.set_right_motor_level(level / 2)
+            else:
+                vec_to_target = target_pose_xy - robot_pose_xy
+                target_dist = np.linalg.norm(vec_to_target)
+                azimuth_to_target = np.arctan2(vec_to_target[1], vec_to_target[0])
+                theta_e = azimuth_to_target - robot_pose_theta
+                v_ref = robot.k_obs_avoid * target_dist
+                v_e = v_ref - robot.velocity
 
-        for state in obstacle_states:
-            pose = state["pose"]
-            theta = state["theta"]
-            a = state["a"]
-            b = state["b"]
-            ellipse = Ellipse(xy=[pose.x, pose.y], width=2*a, height=2*b, angle=np.rad2deg(theta))
-            plt.gca().add_artist(ellipse)
-
-        for p1, p2 in zip(points[:-1], points[1:]):
-            x1, y1 = p1
-            x2, y2 = p2
-            plt.plot([x1, x2], [y1, y2], color='blue')
-
-        plt.show()
+                level_left = (robot.k_obs_avoid * v_e - robot.k_theta_e * theta_e) / 2
+                level_right = (robot.k_obs_avoid * v_e + robot.k_theta_e * theta_e) / 2
+                robot.set_left_motor_level(level_left)
+                robot.set_right_motor_level(level_right)
 
 
 path_planner = PathPlanner()
