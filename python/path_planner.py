@@ -24,11 +24,13 @@ class PathPlanner:
         C_sq = xb.T @ A @ xb - 1
         D = B_sq**2 - 4 * A_sq * C_sq
 
-        return D >= 0
+        t = (-B_sq - np.sqrt(D)) / (2 * A_sq)
+        print('D = ' + str(D) + ', t = ' + str(t))
+        return D >= 0 and t >= 0
     
 
     def obstacle_is_forward(self, p_robot, robot_theta, obstacle_states):
-        vec = p_robot * np.array([np.cos(robot_theta), np.sin(robot_theta)])
+        vec = np.array([np.cos(robot_theta), np.sin(robot_theta)])
         direct_obs_dist = np.inf
         vec_to_obs = np.zeros(2)
         obs_xy = np.zeros(2)
@@ -106,41 +108,46 @@ class PathPlanner:
         obstacles_handler.stop()
 
 
+    def step(self):
+        robot_pose_xy = np.array([robot.pose.x, robot.pose.y])
+        robot_pose_theta = robot.pose.theta
+        target_pose_xy = np.array([target.pose.x, target.pose.y])
+        obstacle_states = obstacles_handler.get_obstacle_states()
+        acc_brake = robot.motor_max_force / (robot.k * robot.mass)
+
+        has_obstacles, obs_xy, vec_to_obs, obs_dist = self.obstacle_is_forward(robot_pose_xy, robot_pose_theta, obstacle_states)
+        
+        if has_obstacles:
+            v_ref = np.sqrt(2 * acc_brake * obs_dist)
+            v_e = v_ref - robot.velocity
+            azimuth_to_obs = np.arctan2(vec_to_obs[1], vec_to_obs[0])
+            level = v_e / abs(v_e) * 100
+
+            if robot_pose_theta >= azimuth_to_obs:
+                robot.set_left_motor_level(0)
+                robot.set_right_motor_level(level)
+            else:
+                robot.set_left_motor_level(level)
+                robot.set_right_motor_level(0)
+        else:
+            vec_to_target = target_pose_xy - robot_pose_xy
+            target_dist = np.linalg.norm(vec_to_target)
+            azimuth_to_target = np.arctan2(vec_to_target[1], vec_to_target[0])
+            theta_e = azimuth_to_target - robot_pose_theta
+            v_ref = np.sqrt(2 * acc_brake * target_dist)
+            v_e = v_ref - robot.velocity
+
+            level_left = (robot.k_obs_avoid * v_e - robot.k_theta_e * theta_e) / 2
+            level_right = (robot.k_obs_avoid * v_e + robot.k_theta_e * theta_e) / 2
+            robot.set_left_motor_level(level_left)
+            robot.set_right_motor_level(level_right)
+
+
     def run(self):
         print('path planner started...')
 
         while(self.running):
-            robot_pose_xy = np.array([robot.pose.x, robot.pose.y])
-            robot_pose_theta = robot.pose.theta
-            target_pose_xy = np.array([target.pose.x, target.pose.y])
-            obstacle_states = obstacles_handler.get_obstacle_states()
-
-            has_obstacles, obs_xy, vec_to_obs, obs_dist = self.obstacle_is_forward(robot_pose_xy, robot_pose_theta, obstacle_states)
-
-            if has_obstacles:
-                v_ref = robot.k_obs_avoid * obs_dist
-                v_e = v_ref - robot.velocity
-                azimuth_to_obs = np.arctan2(vec_to_obs[1], vec_to_obs[0])
-                level = v_e / abs(v_e) * 100
-
-                if robot_pose_theta >= azimuth_to_obs:
-                    robot.set_left_motor_level(level / 2)
-                    robot.set_right_motor_level(level)
-                else:
-                    robot.set_left_motor_level(level)
-                    robot.set_right_motor_level(level / 2)
-            else:
-                vec_to_target = target_pose_xy - robot_pose_xy
-                target_dist = np.linalg.norm(vec_to_target)
-                azimuth_to_target = np.arctan2(vec_to_target[1], vec_to_target[0])
-                theta_e = azimuth_to_target - robot_pose_theta
-                v_ref = robot.k_obs_avoid * target_dist
-                v_e = v_ref - robot.velocity
-
-                level_left = (robot.k_obs_avoid * v_e - robot.k_theta_e * theta_e) / 2
-                level_right = (robot.k_obs_avoid * v_e + robot.k_theta_e * theta_e) / 2
-                robot.set_left_motor_level(level_left)
-                robot.set_right_motor_level(level_right)
+            self.step()
 
 
 path_planner = PathPlanner()

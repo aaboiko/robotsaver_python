@@ -90,16 +90,18 @@ class Robot:
     def step(self, dt):
         internal_acceleration_linear = ((self.left_motor_force + self.right_motor_force) / (self.k * self.mass)) * np.array([np.cos(self.pose.theta), np.sin(self.pose.theta)])
         internal_acceleration_rotational = self.motor_bias * (self.right_motor_force - self.left_motor_force) / self.inertia
-        external_acceleration_linear = self.external_force / self.mass - self.k_resistive * np.array([self.dpose.x, self.dpose.y])
+        external_acceleration_linear = self.external_force / (self.k * self.mass) - self.k_resistive * np.array([self.dpose.x, self.dpose.y])
         external_acceleration_rotational = -self.k_rot * self.dpose.theta
         acceleration_linear = internal_acceleration_linear + external_acceleration_linear
         acceleration_rotational = internal_acceleration_rotational + external_acceleration_rotational
         self.ddpose = Pose(acceleration_linear[0], acceleration_linear[1], acceleration_rotational)
+        #print("acc = " + str(acceleration_linear))
 
         velocity_linear = np.array([self.dpose.x, self.dpose.y]) + acceleration_linear * dt
         dtheta = self.dpose.theta + acceleration_rotational * dt
         self.dpose = Pose(velocity_linear[0], velocity_linear[1], dtheta)
         self.velocity = np.linalg.norm(velocity_linear)
+        #print('v = ' + str(self.velocity))
 
         pose_xy = np.array([self.pose.x, self.pose.y]) + velocity_linear * dt
         theta = self.pose.theta + dtheta * dt

@@ -8,12 +8,12 @@
         "control_type": "diff",
 
         "k": 0.3,
-        "k_resistive": 0.3,
-        "k_rot": 0.3,
+        "k_resistive": 0.9,
+        "k_rot": 0.9,
         "v_ref": 5.0,
         "dtheta_ref": 0.785,
-        "k_obs_avoid": 1.0,
-        "k_theta_e": 1.0
+        "k_obs_avoid": 5.0,
+        "k_theta_e": 100.0
     },
     "obstacles": [
         {
@@ -32,13 +32,39 @@
         {
             "id": 1,
             "type": "boat",
-            "a": 4.0,
+            "a": 10.0,
             "b": 3.0,
             "traj": "python/traj/traj_1.txt",
 
             "pose": {
                 "x": 20,
                 "y": 20,
+                "theta": 0
+            }
+        },
+        {
+            "id": 2,
+            "type": "boat",
+            "a": 10.0,
+            "b": 3.0,
+            "traj": "python/traj/traj_3.txt",
+
+            "pose": {
+                "x": 40,
+                "y": 30,
+                "theta": 0
+            }
+        },
+        {
+            "id": 4,
+            "type": "boat",
+            "a": 8.0,
+            "b": 3.0,
+            "traj": "python/traj/traj_1.txt",
+
+            "pose": {
+                "x": 50,
+                "y": 40,
                 "theta": 0
             }
         }
