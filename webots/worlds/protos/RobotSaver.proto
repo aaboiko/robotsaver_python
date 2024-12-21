@@ -1,0 +1,36 @@
+#VRML_SIM R2023b utf8
+
+PROTO RobotSaver [
+    field SFString      name            "robot_saver"
+    field SFVec3f       translation     5 5 1
+    field SFRotation    rotation        0 1 0 0
+    field SFVec3f       scale           0.001 0.001 0.001
+    field SFString      controller      "test"
+    field SFBool        supervisor       FALSE
+]
+{
+    Robot {
+        name IS name
+        controller IS controller
+        supervisor IS supervisor
+
+        children [
+            Transform {
+                translation IS translation
+                rotation IS rotation
+                scale IS scale
+
+                children [
+                    Shape {
+                        appearance PBRAppearance {
+                            baseColor 1 0 0
+                        }
+                        geometry Mesh {
+                            url "../models/robot.dae"
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+}
