@@ -1,5 +1,8 @@
 #VRML_SIM R2023b utf8
 
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/appearances/protos/GlossyPaint.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/appearances/protos/MattePaint.proto"
+
 PROTO RobotSaver [
     field SFString      name            "robot_saver"
     field SFVec3f       translation     5 5 1
@@ -15,22 +18,143 @@ PROTO RobotSaver [
         supervisor IS supervisor
 
         children [
-            Transform {
+            DEF LEFT_MOTOR Propeller {
+                shaftAxis          1 0 0
+                centerOfThrust     -1 -2 0.5
+                thrustConstants    10 0
+                torqueConstants    10 0
+                fastHelixThreshold 75
+
+                device RotationalMotor {
+                    name "robot_left_motor"
+                    maxTorque 200
+                }
+
+                fastHelix Solid {
+                    translation 0 0 0
+
+                    children [
+                        Shape {
+                            appearance DEF METAL_APPEARANCE PBRAppearance {
+                                baseColor 0.5 0.5 0.5
+                                metalness 0
+                                roughness 0.8
+                            }
+
+                            geometry Mesh {
+                                url "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/robots/dji/mavic/protos/Mavic2Pro/meshes/helix_a_joint.obj"
+                            }
+                        }
+
+                        Shape {
+                            appearance GlossyPaint {
+                                baseColor 0.1 0.1 0.1
+                            }
+                            geometry Mesh {
+                                url "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/robots/dji/mavic/protos/Mavic2Pro/meshes/helix_a_plates.obj"
+                            }
+                        }
+
+                        Pose {
+                            translation 0 0 0.02
+                            children [
+                            Shape {
+                                appearance PBRAppearance {
+                                    baseColor 0.5 0.5 0.5
+                                    baseColorMap ImageTexture {
+                                        url "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/default/protos/textures/fast_helix.png"
+                                    }
+                                    metalness 0
+                                    roughness 0
+                                }
+                                geometry Cylinder {
+                                    radius 0.12
+                                    height 0.001
+                                    side FALSE
+                                }
+                            }
+                            ]
+                        }
+                    ]
+
+                    boundingObject Group {
+                        children [
+                            Pose {
+                                translation 0 0 0.015
+
+                                children [
+                                    Cylinder {
+                                        height 0.025
+                                        radius 0.12
+                                    }
+                                ]
+                            }
+                        ]
+                        }
+                        physics Physics {
+                            density -1
+                            mass 0.1
+                        }
+                }
+
+
+            }
+
+            DEF GYRO Gyro {
+            }
+
+            DEF INERTIAL_UNIT InertialUnit {
+            }
+
+            Solid {
                 translation IS translation
                 rotation IS rotation
-                scale IS scale
 
+                physics Physics {
+                    density -1
+    mass 0.4
+    centerOfMass [
+      -0.088 0 -0.04
+    ]
+                }
+
+                boundingObject Pose {
+                    translation 0 0 0.3
+                    rotation 1 0 0 0
+
+                    children [
+                        Box {
+                            size 4.8 2.8 0.9
+                        }
+                    ]
+                }
+            
                 children [
-                    Shape {
-                        appearance PBRAppearance {
-                            baseColor 1 0 0
-                        }
-                        geometry Mesh {
-                            url "../models/robot.dae"
-                        }
-                    }
+                   Transform {
+                        scale IS scale
+
+                        children [
+                            Shape {
+                                appearance PBRAppearance {
+                                    baseColor 1 0 0
+                                }
+
+                                geometry Mesh {
+                                    url "../models/robot.dae"
+                                }
+                            }
+                        ]
+                   }
+
                 ]
             }
         ]
+
+        physics Physics {
+            density -1
+            mass 50
+            inertiaMatrix [1 1 1 0 0 0]
+            centerOfMass [ -0.088 0 -0.04]
+        }
     }
 }

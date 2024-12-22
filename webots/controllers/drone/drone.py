@@ -113,5 +113,10 @@ def main():
 
         front_left_motor_input, front_right_motor_input, rear_left_motor_input, rear_right_motor_input = get_control_inputs(roll_disturbance, pitch_disturbance, yaw_disturbance, target_altitude, gps_values, gyro_values, imu_values)
 
+        front_left_motor.setVelocity(front_left_motor_input)
+        front_right_motor.setVelocity(-front_right_motor_input)
+        rear_left_motor.setVelocity(-rear_left_motor_input)
+        rear_right_motor.setVelocity(rear_right_motor_input)
+
 
 main()

@@ -55,7 +55,7 @@ Floor {
 Mavic2Pro {
   translation 0 0 0.1
   rotation 0 0 1 3.141590777218456
-  controller "test"
+  controller "drone"
   supervisor TRUE
 
   cameraSlot [
@@ -68,8 +68,8 @@ Mavic2Pro {
 }
 
 RobotSaver {
-    translation 5 5 0.1
+    translation 5 5 0.5
     rotation 0 0 1 3.141590777218456
-    controller "test"
+    controller "robot"
     supervisor TRUE
 }
