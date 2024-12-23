@@ -1,0 +1,201 @@
+#VRML_SIM R2023b utf8
+
+
+PROTO CameraPost [
+    field SFString      name            "camera_post"
+    field SFVec3f       translation     0 0 0
+    field SFRotation    rotation        1 0 0 0
+    field SFString      controller      "test"
+    field SFBool        supervisor       TRUE
+
+    field MFNode        cameraSlot        [ 
+        Camera { width 1920 height 1080 } 
+    ]
+
+]
+{
+    Robot {
+        name IS name
+        controller IS controller
+        supervisor IS supervisor
+
+        translation IS translation
+        rotation IS rotation
+
+        children [
+            Solid {
+                translation 0 0 0
+
+                boundingObject Cylinder {
+                    height 10
+                    radius 0.15
+                }
+
+                children [
+                    Shape {
+                        appearance PBRAppearance {
+                            baseColor 0.5 0.5 0.5
+                        }
+
+                        geometry Cylinder {
+                            height 10
+                            radius 0.15
+                        }
+                    }
+                ]
+            }
+
+            DEF CAMERA_YAW HingeJoint {
+                jointParameters HingeJointParameters {
+                    axis 0 0 1
+                    anchor 0.0412774 -0.00469654 -0.00405862
+                }
+                device [
+                    RotationalMotor {
+                        name "camera yaw"
+                        minPosition -1.7
+                        maxPosition 1.7
+                    }
+                    PositionSensor {
+                        name "camera yaw sensor"
+                    }
+                ]
+                endPoint Solid {
+                    translation 0.0412774 -0.00469654 -0.00405862
+                    rotation 0 0 1 0
+                    children [
+                    Shape {
+                        appearance PBRAppearance {
+                            roughness 0.5
+                        }
+
+                        geometry Mesh {
+                            url "raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/robots/dji/mavic/protos/Mavic2Pro/meshes/camera_yaw.obj"
+                        }
+                    }
+                    DEF CAMERA_PITCH HingeJoint {
+                        jointParameters HingeJointParameters {
+                            axis 0 1 0
+                            anchor 0.000625212 -0.00530346 -0.0207448
+                        }
+                        device [
+                            RotationalMotor {
+                                name "camera pitch"
+                                minPosition -0.5
+                                maxPosition 1.7
+                            }
+                            PositionSensor {
+                                name "camera pitch sensor"
+                            }
+                        ]
+                        endPoint Solid {
+                        translation 0.000625212 -0.00530346 -0.0207448
+                        children [
+                            Shape {
+                            appearance PBRAppearance {
+                                roughness 0.5
+                            }
+
+                            geometry Mesh {
+                                url "raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/robots/dji/mavic/protos/Mavic2Pro/meshes/camera_pitch.obj"
+                            }
+                            }
+                            DEF CAMERA_ROLL HingeJoint {
+                            jointParameters HingeJointParameters {
+                                anchor 0.00754686 0.0160388 -0.00586401
+                            }
+                            device [
+                                RotationalMotor {
+                                name "camera roll"
+                                minPosition -0.5
+                                maxPosition 0.5
+                                }
+                                PositionSensor {
+                                name "camera roll sensor"
+                                }
+                            ]
+                            endPoint Solid {
+                                translation 0.00754686 0.0160388 5
+                                rotation 1 0 0 0
+                                children [
+                                Shape {
+                                    appearance PBRAppearance {
+                                        roughness 0.5
+                                    }
+
+                                    geometry Mesh {
+                                        url "raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/robots/dji/mavic/protos/Mavic2Pro/meshes/camera_chassis.obj"
+                                    }
+                                }
+                                Shape {
+                                    appearance PBRAppearance {
+                                        baseColor 0.523146 0.8 0.627785
+                                        transparency 0.9
+                                        roughness 0.5
+                                        metalness 0
+                                    }
+
+                                    geometry Mesh {
+                                        url "raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/robots/dji/mavic/protos/Mavic2Pro/meshes/camera_lens.obj"
+                                    }
+                                }
+
+                                DEF CAMERA_SLOT Pose {
+                                    children IS cameraSlot
+                                }
+                                ]
+                                name "camera roll"
+                                boundingObject Pose {
+                                translation -0.00915058 -1.86265e-08 -0.000983764
+                                children [
+                                    Box {
+                                    size 0.0236511 0.0205141 0.0225186
+                                    }
+                                ]
+                                }
+                                physics Physics {
+                                density -1
+                                mass 0.0333
+                                }
+                            }
+                            }
+                        ]
+                        name "camera pitch"
+                        boundingObject Pose {
+                            translation -0.00248347 0.00776876 0.00183829
+                            children [
+                            Box {
+                                size 0.0239878 0.0349393 0.0314891
+                            }
+                            ]
+                        }
+                        physics Physics {
+                            density -1
+                            mass 0.0333
+                        }
+                        }
+                    }
+                    ]
+                    name "camera yaw"
+                    boundingObject Pose {
+                    translation -1.86265e-09 -0.00304481 -0.0140589
+                    children [
+                        Box {
+                        size 0.0208626 0.0260333 0.0307844
+                        }
+                    ]
+                    }
+                    physics Physics {
+                    density -1
+                    mass 0.0333
+                    }
+                }
+            }
+
+            DEF EMITTER Emitter {
+                type "serial"
+                byteSize 8
+            }
+        ]
+    }
+}

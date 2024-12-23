@@ -6,7 +6,7 @@ EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/project
 PROTO RobotSaver [
     field SFString      name            "robot_saver"
     field SFVec3f       translation     5 5 1
-    field SFRotation    rotation        0 1 0 0
+    field SFRotation    rotation        0 0 1 0
     field SFVec3f       scale           0.001 0.001 0.001
     field SFString      controller      "test"
     field SFBool        supervisor       FALSE
@@ -17,12 +17,15 @@ PROTO RobotSaver [
         controller IS controller
         supervisor IS supervisor
 
+        translation IS translation
+        rotation IS rotation
+
         children [
             DEF LEFT_MOTOR Propeller {
-                shaftAxis          1 0 0
-                centerOfThrust     -1 -2 0.5
-                thrustConstants    10 0
-                torqueConstants    10 0
+                shaftAxis          -1 0 0
+                centerOfThrust     0 -3 0
+                thrustConstants    100 0
+                torqueConstants    100 0
                 fastHelixThreshold 75
 
                 device RotationalMotor {
@@ -30,74 +33,26 @@ PROTO RobotSaver [
                     maxTorque 200
                 }
 
-                fastHelix Solid {
-                    translation 0 0 0
+                fastHelix NULL
+                slowHelix NULL
+                
+            }
 
-                    children [
-                        Shape {
-                            appearance DEF METAL_APPEARANCE PBRAppearance {
-                                baseColor 0.5 0.5 0.5
-                                metalness 0
-                                roughness 0.8
-                            }
+            DEF LEFT_MOTOR Propeller {
+                shaftAxis          -1 0 0
+                centerOfThrust     0 3 0
+                thrustConstants    100 0
+                torqueConstants    100 0
+                fastHelixThreshold 75
 
-                            geometry Mesh {
-                                url "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/robots/dji/mavic/protos/Mavic2Pro/meshes/helix_a_joint.obj"
-                            }
-                        }
-
-                        Shape {
-                            appearance GlossyPaint {
-                                baseColor 0.1 0.1 0.1
-                            }
-                            geometry Mesh {
-                                url "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/robots/dji/mavic/protos/Mavic2Pro/meshes/helix_a_plates.obj"
-                            }
-                        }
-
-                        Pose {
-                            translation 0 0 0.02
-                            children [
-                            Shape {
-                                appearance PBRAppearance {
-                                    baseColor 0.5 0.5 0.5
-                                    baseColorMap ImageTexture {
-                                        url "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/default/protos/textures/fast_helix.png"
-                                    }
-                                    metalness 0
-                                    roughness 0
-                                }
-                                geometry Cylinder {
-                                    radius 0.12
-                                    height 0.001
-                                    side FALSE
-                                }
-                            }
-                            ]
-                        }
-                    ]
-
-                    boundingObject Group {
-                        children [
-                            Pose {
-                                translation 0 0 0.015
-
-                                children [
-                                    Cylinder {
-                                        height 0.025
-                                        radius 0.12
-                                    }
-                                ]
-                            }
-                        ]
-                        }
-                        physics Physics {
-                            density -1
-                            mass 0.1
-                        }
+                device RotationalMotor {
+                    name "robot_right_motor"
+                    maxTorque 200
                 }
 
-
+                fastHelix NULL
+                slowHelix NULL
+                
             }
 
             DEF GYRO Gyro {
@@ -106,25 +61,25 @@ PROTO RobotSaver [
             DEF INERTIAL_UNIT InertialUnit {
             }
 
+            DEF RECEIVER Receiver {
+                type "serial"
+            }
+
             Solid {
-                translation IS translation
-                rotation IS rotation
+                
 
                 physics Physics {
-                    density -1
-    mass 0.4
-    centerOfMass [
-      -0.088 0 -0.04
-    ]
+                    density 20
+                    mass -1
+                    
                 }
 
                 boundingObject Pose {
-                    translation 0 0 0.3
-                    rotation 1 0 0 0
+                    translation 0 0 0.5
 
                     children [
                         Box {
-                            size 4.8 2.8 0.9
+                            size 4.8 2.8 1
                         }
                     ]
                 }
