@@ -9,15 +9,6 @@ from controller import InertialUnit
 from controller import Motor
 from controller import Emitter, Receiver
 
-class Handler:
-    def __init__(self):
-        self.value = 0
-
-    def inc(self):
-        self.value += 1
-
-handler = Handler()
-
 def main():
     robot = Supervisor()
     timestep = int(robot.getBasicTimeStep())
@@ -26,9 +17,6 @@ def main():
     imu.enable(timestep)
     gyro = robot.getDevice("gyro")
     gyro.enable(timestep)
-
-    receiver = robot.getDevice("receiver")
-    receiver.enable(timestep)
 
     motor_left = robot.getDevice("robot_left_motor")
     motor_right = robot.getDevice("robot_right_motor")
@@ -50,16 +38,17 @@ def main():
         gyro_values = gyro.getValues()
         roll_velocity, pitch_velocity, yaw_velocity = gyro_values
 
-        motor_left.setVelocity(5.0)
-        motor_right.setVelocity(5.0)
+        np.savetxt('../data_handler/robot_imu.txt', np.array(imu_values), delimiter=' ')
 
-        #print('queue length: ' + str(receiver.getQueueLength()))
-        print("value: " + str(handler.value))
+        motor_torques = np.loadtxt('../data_handler/motors.txt', delimiter=' ')
+        
+        if motor_torques.shape[0] > 0:
+            print('data: ' + str(motor_torques))
+            left_motor_torque, right_motor_torque = motor_torques
 
-        '''while receiver.getQueueLength() > 0:
-            data = receiver.getFloats()
-            print('data received: ' + str(data))
-            receiver.nextPacket()'''
+            motor_left.setVelocity(left_motor_torque)
+            motor_right.setVelocity(right_motor_torque)
+
 
 
 main()

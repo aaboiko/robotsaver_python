@@ -4,6 +4,7 @@ EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/project
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/appearances/protos/MattePaint.proto"
 
 PROTO RobotSaver [
+    field SFInt32       id              666
     field SFString      name            "robot_saver"
     field SFVec3f       translation     5 5 1
     field SFRotation    rotation        0 0 1 0
