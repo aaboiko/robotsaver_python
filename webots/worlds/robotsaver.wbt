@@ -70,8 +70,9 @@ CameraPost {
 
 RobotSaver {
     name "robot_saver"
-    translation 5 5 0.1
+    translation -40 5 0.1
     rotation 0 0 1 6.28
     controller "drone"
     supervisor TRUE
 }
+
