@@ -13,6 +13,11 @@ from controller import Keyboard
 from controller import Motor
 from controller import Emitter, Receiver
 
+
+CLASS_ROBOT = 8
+CLASS_OBSTACLE = 16
+CLASS_TARGET = 0
+
 model_name = "yolov8n"
 
 camera_motor_const = 0.01
@@ -63,7 +68,7 @@ def obstacle_is_forward(p_robot, robot_theta, obstacle_params):
         x = obs_param["x"]
         y = obs_param["y"]
         theta = obs_param["theta"]
-        a = obs_param
+        a = obs_param["a"]
         b = obs_param["b"]
 
         obs_pose_xy = np.array([x, y])
@@ -169,13 +174,31 @@ def get_objects_from_image(camera, camera_rpy, model):
     results = model(image_rgb)
     classes = results[0].boxes.cls.cpu().numpy()
     boxes = results[0].boxes.xywhn.cpu().numpy()
-    obj_pose = np.zeros(2)
-    #print('CLASSES: ' + str(classes))
-    #print("BOXES: " + str(boxes))
-    if len(boxes) > 0:
-        obj_pose = box_to_plane(boxes[0], camera, camera_rpy)
+    obj_params = []
 
-    return obj_pose
+    print('CLASSES: ' + str(classes))
+    #print("BOXES: " + str(boxes))
+
+    if len(boxes) > 0:
+        for box, cls in zip(boxes, classes):
+            obj_pose, a, b, pan = box_to_plane(box, camera, camera_rpy)
+
+            if cls == CLASS_ROBOT:
+                robot_pose = obj_pose
+            elif cls == CLASS_TARGET:
+                target_pose = obj_pose
+            else:
+                obj = {
+                    "a": a,
+                    "b": b,
+                    "theta": pan,
+                    "x": obj_pose[0],
+                    "y": obj_pose[1]
+                }
+
+                obj_params.append(obj)
+
+    return robot_pose, target_pose, obj_params
         
 
 def main():
@@ -226,7 +249,7 @@ def main():
         if robot_name == "camera_post":
             camera_rpy = [0, camera_pitch, camera_yaw]
 
-            res = get_objects_from_image(camera, camera_rpy, model)
+            robot_pose, target_pose, obstacles = get_objects_from_image(camera, camera_rpy, model)
 
             if key > 0:
                 if key == Keyboard.UP:

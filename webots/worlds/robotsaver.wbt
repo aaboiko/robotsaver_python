@@ -5,6 +5,9 @@ EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/project
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/floors/protos/Floor.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/robots/dji/mavic/protos/Mavic2Pro.proto"
 
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/animals/protos/Cow.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/trees/protos/Oak.proto"
+
 EXTERNPROTO "protos/RobotSaver.proto"
 EXTERNPROTO "protos/CameraPost.proto"
 
@@ -77,3 +80,13 @@ RobotSaver {
     supervisor TRUE
 }
 
+
+Cow {
+   translation -40 5 0.1
+   rotation 0 0 1 1.57
+}
+
+Oak {
+   translation -50 15 0.1
+   rotation 0 0 1 1.57
+}
